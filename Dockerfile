@@ -6,7 +6,9 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN corepack enable
 
 COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml* ./
-RUN if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile; else pnpm install; fi
+COPY prisma ./prisma
+COPY prisma.config.ts ./
+RUN if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile; else pnpm install; fi && pnpm db:generate
 
 FROM node:22-alpine AS runner
 
@@ -21,4 +23,4 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["pnpm", "dev", "--hostname", "0.0.0.0"]
+CMD ["sh", "-c", "pnpm db:deploy && pnpm db:seed && pnpm dev --hostname 0.0.0.0"]

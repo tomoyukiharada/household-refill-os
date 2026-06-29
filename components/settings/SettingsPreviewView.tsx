@@ -1,4 +1,5 @@
 import { Bell, LockKeyhole, Users } from "lucide-react";
+import { LogoutButton } from "@/components/auth/LogoutButton";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { mockSettingsSections } from "@/lib/mock-data";
 
@@ -8,9 +9,31 @@ const icons = {
   notifications: Bell
 };
 
-export function SettingsPreviewView() {
+type SettingsPreviewViewProps = {
+  account: {
+    email?: string | null;
+    householdName: string;
+    role: string;
+  };
+};
+
+export function SettingsPreviewView({ account }: SettingsPreviewViewProps) {
   return (
     <div className="space-y-3">
+      <section className="rounded-lg border border-slate-200 bg-white p-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 className="text-lg font-bold leading-7 text-ink">アカウント</h2>
+          <StatusPill tone="green">{account.role}</StatusPill>
+        </div>
+        <div className="mt-2 space-y-1 text-sm leading-6 text-slate-600">
+          <p>{account.email}</p>
+          <p>{account.householdName}</p>
+        </div>
+        <div className="mt-4">
+          <LogoutButton />
+        </div>
+      </section>
+
       {mockSettingsSections.map((section) => {
         const Icon = icons[section.icon];
 
