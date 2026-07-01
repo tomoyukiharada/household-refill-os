@@ -19,6 +19,26 @@ services:
       - app_node_modules:/app/node_modules
       - app_next:/app/.next
 
+  e2e:
+    image: mcr.microsoft.com/playwright:v1.49.1-noble
+    profiles:
+      - test
+    working_dir: /app
+    command: sh -c "corepack enable && corepack prepare pnpm@11.7.0 --activate && pnpm install --frozen-lockfile && pnpm test:e2e"
+    environment:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+    volumes:
+      - .:/app
+      - e2e_node_modules:/app/node_modules
+      - e2e_next:/app/.next
+      - e2e_data:/app/data
+      - e2e_pnpm_store:/root/.local/share/pnpm/store
+
 volumes:
   app_node_modules:
   app_next:
+  e2e_node_modules:
+  e2e_next:
+  e2e_data:
+  e2e_pnpm_store:
