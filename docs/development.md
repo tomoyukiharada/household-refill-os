@@ -35,6 +35,7 @@ password: change-me
 DATABASE_URL="file:../data/app.db"
 AUTH_SECRET="replace-me"
 APP_BASE_URL="http://localhost:3000"
+NEXTAUTH_URL="http://localhost:3000"
 INITIAL_OWNER_EMAIL="owner@example.local"
 INITIAL_OWNER_PASSWORD="change-me"
 INITIAL_HOUSEHOLD_NAME="Home"
@@ -56,6 +57,7 @@ Docker Composeは `.env` を使って環境変数を展開します。`.env.loca
 | Prisma Client生成 | `docker compose run --rm --no-deps app pnpm db:generate` |
 | migration適用 | `docker compose run --rm --no-deps app pnpm db:deploy` |
 | seed実行 | `docker compose run --rm --no-deps app pnpm db:seed` |
+| E2Eイメージ作成 | `docker compose build e2e` |
 | E2E | `docker compose run --rm e2e` |
 
 `app` サービスの `node_modules` と `.next` はnamed volumeです。ホストのリポジトリには依存ファイルを作りません。
@@ -126,7 +128,14 @@ docker compose run --rm --no-deps app pnpm build
 docker compose run --rm e2e
 ```
 
-E2EはPlaywright公式イメージを使います。初回は `mcr.microsoft.com/playwright:v1.49.1-noble` のpullとpnpm依存インストールが走ります。依存はDocker volumeに残るため、2回目以降は短くなります。
+E2EはPlaywright公式イメージをベースにした `Dockerfile.e2e` を使います。初回は `mcr.microsoft.com/playwright:v1.49.1-noble` のpullとE2Eイメージ作成、pnpm依存インストールが走ります。依存はDocker volumeに残るため、2回目以降は短くなります。
+
+```bash
+docker compose build e2e
+docker compose run --rm e2e
+```
+
+Playwright公式イメージ内のCorepack署名キーが古いと、pnpm有効化時に `Cannot find matching keyid` で失敗することがあります。このためE2EイメージではCorepackを使わず、`npm install --global --force @pnpm/exe@11.7.0` でpnpmを事前に入れます。
 
 ## 依存関係の追加
 
@@ -150,7 +159,8 @@ docker compose run --rm --no-deps app pnpm add -D <package>
 
 `e2e` サービス:
 
-- Playwright公式イメージを使用
+- `Dockerfile.e2e` でPlaywright公式イメージを拡張
+- pnpmはCorepackではなく `@pnpm/exe` をnpm経由で事前インストール
 - `test` profile配下なので通常の `docker compose up` では起動しない
 - `e2e_node_modules`, `e2e_next`, `e2e_data`, `e2e_pnpm_store` named volumeを使用
 - 通常の `./data/app.db` とは別のDBでテストする

@@ -13,6 +13,7 @@ export default defineConfig({
       DATABASE_URL: "file:../data/e2e.db",
       AUTH_SECRET: "test-secret",
       APP_BASE_URL: "http://127.0.0.1:3000",
+      NEXTAUTH_URL: "http://127.0.0.1:3000",
       INITIAL_OWNER_EMAIL: "owner@example.local",
       INITIAL_OWNER_PASSWORD: "change-me",
       INITIAL_HOUSEHOLD_NAME: "Home"

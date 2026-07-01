@@ -8,6 +8,7 @@ services:
       DATABASE_URL: "file:../data/app.db"
       AUTH_SECRET: "${AUTH_SECRET:-dev-insecure-change-me}"
       APP_BASE_URL: "http://localhost:3000"
+      NEXTAUTH_URL: "${NEXTAUTH_URL:-http://localhost:3000}"
       INITIAL_OWNER_EMAIL: "${INITIAL_OWNER_EMAIL:-owner@example.local}"
       INITIAL_OWNER_PASSWORD: "${INITIAL_OWNER_PASSWORD:-change-me}"
       INITIAL_HOUSEHOLD_NAME: "${INITIAL_HOUSEHOLD_NAME:-Home}"
@@ -20,11 +21,13 @@ services:
       - app_next:/app/.next
 
   e2e:
-    image: mcr.microsoft.com/playwright:v1.49.1-noble
+    build:
+      context: .
+      dockerfile: Dockerfile.e2e
     profiles:
       - test
     working_dir: /app
-    command: sh -c "corepack enable && corepack prepare pnpm@11.7.0 --activate && pnpm install --frozen-lockfile && pnpm test:e2e"
+    command: sh -c "pnpm install --frozen-lockfile && pnpm test:e2e"
     environment:
       CI: "true"
       NEXT_TELEMETRY_DISABLED: "1"

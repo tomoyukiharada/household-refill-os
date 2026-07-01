@@ -85,8 +85,11 @@ docker compose run --rm --no-deps app pnpm db:seed
 E2EはPlaywright公式イメージを使う `e2e` サービスで実行します。初回はイメージ取得と依存インストールに時間がかかります。
 
 ```bash
+docker compose build e2e
 docker compose run --rm e2e
 ```
+
+E2Eサービスは `Dockerfile.e2e` でpnpmを事前に入れます。Playwright公式イメージ内のCorepack署名キーが古い場合でも、`Cannot find matching keyid` で止まらないようにしています。
 
 ## 環境変数
 
@@ -96,6 +99,8 @@ Docker Composeで使う値は `.env` に置きます。Next.jsをホストのNod
 
 - `DATABASE_URL`: Prisma schema基準のSQLite URL。標準は `file:../data/app.db`
 - `AUTH_SECRET`: NextAuthの署名用secret。実運用前に必ず変更
+- `APP_BASE_URL`: アプリ自身のURL。標準は `http://localhost:3000`
+- `NEXTAUTH_URL`: NextAuthが使うURL。標準は `http://localhost:3000`
 - `INITIAL_OWNER_EMAIL`: 初期ownerのメールアドレス
 - `INITIAL_OWNER_PASSWORD`: 初期ownerの初回パスワード
 - `INITIAL_HOUSEHOLD_NAME`: 初期家庭名
