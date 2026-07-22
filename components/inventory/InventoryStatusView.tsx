@@ -1,7 +1,10 @@
 import { AlertTriangle, Plus } from "lucide-react";
+import {
+  addProductToShoppingList,
+  updateInventoryLevel
+} from "@/app/(app)/actions";
 import { StatusPill } from "@/components/ui/StatusPill";
-import { mockInventoryItems } from "@/lib/mock-data";
-import type { ProductLevel } from "@/lib/types";
+import type { InventoryItem, ProductLevel } from "@/lib/types";
 
 const levelTone: Record<ProductLevel, "amber" | "red" | "neutral" | "green"> = {
   enough: "green",
@@ -17,8 +20,8 @@ const levelLabel: Record<ProductLevel, string> = {
   unknown: "未確認"
 };
 
-export function InventoryStatusView() {
-  const refillItems = mockInventoryItems.filter(
+export function InventoryStatusView({ items }: { items: InventoryItem[] }) {
+  const refillItems = items.filter(
     (item) => item.level === "low" || item.level === "empty"
   );
 
@@ -35,7 +38,7 @@ export function InventoryStatusView() {
       </section>
 
       <div className="space-y-3">
-        {refillItems.map((item) => (
+          {items.map((item) => (
           <article
             key={item.id}
             className="rounded-lg border border-slate-200 bg-white p-4"
@@ -60,14 +63,41 @@ export function InventoryStatusView() {
                 </p>
               </div>
 
-              <button
-                type="button"
-                className="flex min-h-11 shrink-0 items-center gap-1 rounded-lg bg-ink px-3 text-sm font-bold text-white transition hover:bg-slate-700"
-              >
-                <Plus aria-hidden="true" className="h-4 w-4" />
-                追加
-              </button>
+              <form action={addProductToShoppingList}>
+                <input type="hidden" name="productId" value={item.productId} />
+                <button
+                  type="submit"
+                  className="flex min-h-11 shrink-0 items-center gap-1 rounded-lg bg-ink px-3 text-sm font-bold text-white transition hover:bg-slate-700"
+                  aria-label={`${item.name}を今日買うリストに追加`}
+                >
+                  <Plus aria-hidden="true" className="h-4 w-4" />
+                  追加
+                </button>
+              </form>
             </div>
+            <form action={updateInventoryLevel} className="mt-3 flex gap-2">
+              <input type="hidden" name="inventoryItemId" value={item.id} />
+              <label className="min-w-0 flex-1 text-sm font-bold text-slate-700">
+                残量を更新
+                <select
+                  name="level"
+                  defaultValue={item.level}
+                  className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 font-normal"
+                  aria-label={`${item.name}の残量`}
+                >
+                  <option value="enough">十分</option>
+                  <option value="low">少ない</option>
+                  <option value="empty">空</option>
+                  <option value="unknown">未確認</option>
+                </select>
+              </label>
+              <button
+                type="submit"
+                className="mt-6 min-h-11 rounded-lg border border-slate-300 px-4 text-sm font-bold text-ink"
+              >
+                保存
+              </button>
+            </form>
           </article>
         ))}
       </div>

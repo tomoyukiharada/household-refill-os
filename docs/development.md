@@ -90,7 +90,7 @@ docker compose run --rm --no-deps app pnpm db:migrate --name <name>
 docker compose run --rm --no-deps app pnpm db:seed
 ```
 
-SQLite DBは通常起動では `./data/app.db` に保存されます。E2EはComposeの `e2e_data` named volumeを使うため、通常のアプリDBを壊しません。
+SQLite DBは通常起動では `./data/app.db` に保存されます。E2Eはコンテナ内の一時ファイルシステムを使うため、実行ごとに初期化され、通常のアプリDBを壊しません。
 
 ## 認証まわりの実装場所
 
@@ -119,7 +119,7 @@ SQLite DBは通常起動では `./data/app.db` に保存されます。E2EはCom
 
 ## テストと検証
 
-Phase 1で最低限確認するコマンド:
+変更後に最低限確認するコマンド:
 
 ```bash
 docker compose run --rm --no-deps app pnpm typecheck
@@ -135,7 +135,7 @@ docker compose build e2e
 docker compose run --rm e2e
 ```
 
-Playwright公式イメージ内のCorepack署名キーが古いと、pnpm有効化時に `Cannot find matching keyid` で失敗することがあります。このためE2EイメージではCorepackを使わず、`npm install --global --force @pnpm/exe@11.7.0` でpnpmを事前に入れます。
+Corepack署名キーや実行時ダウンロードに依存しないよう、開発・本番・E2Eの各イメージでは `npm install --global --force @pnpm/exe@11.7.0` でpnpmをビルド時に入れます。
 
 ## 依存関係の追加
 
@@ -162,19 +162,25 @@ docker compose run --rm --no-deps app pnpm add -D <package>
 - `Dockerfile.e2e` でPlaywright公式イメージを拡張
 - pnpmはCorepackではなく `@pnpm/exe` をnpm経由で事前インストール
 - `test` profile配下なので通常の `docker compose up` では起動しない
-- `e2e_node_modules`, `e2e_next`, `e2e_data`, `e2e_pnpm_store` named volumeを使用
+- `e2e_node_modules`, `e2e_next`, `e2e_pnpm_store` named volumeを使用
+- E2E用DBは `/app/data` の一時ファイルシステムに置き、実行ごとに初期化
 - 通常の `./data/app.db` とは別のDBでテストする
 
-## Phase 2で触る場所
+## Phase 2の実装場所
 
-Phase 2では以下を追加する予定です。
+- `prisma/schema.prisma`: Product / InventoryItem / Store / ShoppingList / ShoppingListItem
+- `lib/household-data.ts`: 家庭境界付きの画面用クエリ
+- `app/(app)/actions.ts`: 追加、チェック、残量更新のServer Actions
+- `prisma/seed.ts`: 初期店舗・商品・在庫・買い物リスト
 
-- `Product`
-- `InventoryItem`
-- `Store`
-- `ShoppingList`
-- `ShoppingListItem`
-- 買い物リスト追加/チェック保存
-- 残量更新
+DBアクセスでは `session.user.householdId` を使い、読み取りだけでなく作成・更新でも家庭境界を守ります。フォームからhouseholdIdを送信する設計にはしません。
 
-DBアクセス時は必ず `session.user.householdId` を使い、家庭ごとのデータ分離を守ります。
+## 本番相当の起動
+
+自宅サーバー用の本番イメージをローカルで確認する場合は次を使います。
+
+```bash
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+必要な環境変数と運用手順は[Self-hosting Guide](self-hosting.md)を参照してください。

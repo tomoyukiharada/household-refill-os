@@ -2,9 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, Plus } from "lucide-react";
+import { addShoppingItem } from "@/app/(app)/actions";
 import { StoreSection } from "@/components/shopping/StoreSection";
 import { StatusPill } from "@/components/ui/StatusPill";
-import { mockShoppingItems } from "@/lib/mock-data";
 import type { ShoppingItem } from "@/lib/types";
 
 function groupItemsByStore(items: ShoppingItem[]) {
@@ -15,8 +15,12 @@ function groupItemsByStore(items: ShoppingItem[]) {
   }, {});
 }
 
-export function ShoppingTodayView() {
-  const [items, setItems] = useState<ShoppingItem[]>(mockShoppingItems);
+type ShoppingTodayViewProps = {
+  items: ShoppingItem[];
+  stores: Array<{ id: string; name: string }>;
+};
+
+export function ShoppingTodayView({ items, stores }: ShoppingTodayViewProps) {
   const [showCompleted, setShowCompleted] = useState(true);
 
   const activeItems = items.filter((item) => item.status === "active");
@@ -29,19 +33,6 @@ export function ShoppingTodayView() {
     () => groupItemsByStore(activeItems),
     [activeItems]
   );
-
-  const toggleItem = (id: string) => {
-    setItems((currentItems) =>
-      currentItems.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              status: item.status === "checked" ? "active" : "checked"
-            }
-          : item
-      )
-    );
-  };
 
   return (
     <div className="space-y-5">
@@ -70,7 +61,6 @@ export function ShoppingTodayView() {
             key={store}
             store={store}
             items={storeItems}
-            onToggleItem={toggleItem}
           />
         ))}
       </div>
@@ -101,22 +91,96 @@ export function ShoppingTodayView() {
                 store={item.store}
                 items={[item]}
                 compact
-                onToggleItem={toggleItem}
               />
             ))}
           </div>
         ) : null}
       </section>
 
-      <div className="pointer-events-none fixed inset-x-0 bottom-20 z-20 mx-auto w-full max-w-[480px] px-4">
-        <button
-          type="button"
-          className="pointer-events-auto flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-leaf px-5 text-base font-bold text-white shadow-soft transition hover:bg-emerald-700 active:scale-[0.99]"
-        >
+      <details className="rounded-lg border border-emerald-200 bg-white shadow-soft">
+        <summary className="flex min-h-12 cursor-pointer list-none items-center justify-center gap-2 rounded-lg bg-leaf px-5 text-base font-bold text-white">
           <Plus aria-hidden="true" className="h-5 w-5" />
-          追加
-        </button>
-      </div>
+          買うものを追加
+        </summary>
+        <form action={addShoppingItem} className="space-y-3 p-4">
+          <label className="block text-sm font-bold text-ink">
+            商品名
+            <input
+              required
+              name="title"
+              maxLength={80}
+              className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 px-3 font-normal"
+            />
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block text-sm font-bold text-ink">
+              数量
+              <input
+                required
+                name="quantity"
+                type="number"
+                min="0.1"
+                max="999"
+                step="0.1"
+                defaultValue="1"
+                className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 px-3 font-normal"
+              />
+            </label>
+            <label className="block text-sm font-bold text-ink">
+              単位
+              <input
+                required
+                name="unit"
+                maxLength={20}
+                defaultValue="個"
+                className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 px-3 font-normal"
+              />
+            </label>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block text-sm font-bold text-ink">
+              店舗
+              <select
+                name="storeId"
+                className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 px-3 font-normal"
+              >
+                <option value="">未分類</option>
+                {stores.map((store) => (
+                  <option key={store.id} value={store.id}>
+                    {store.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block text-sm font-bold text-ink">
+              優先度
+              <select
+                name="priority"
+                defaultValue="normal"
+                className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 px-3 font-normal"
+              >
+                <option value="low">低</option>
+                <option value="normal">通常</option>
+                <option value="high">高</option>
+              </select>
+            </label>
+          </div>
+          <label className="block text-sm font-bold text-ink">
+            メモ
+            <input
+              name="note"
+              maxLength={200}
+              className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 px-3 font-normal"
+            />
+          </label>
+          <button
+            type="submit"
+            className="min-h-11 w-full rounded-lg bg-ink px-4 font-bold text-white"
+          >
+            リストに保存
+          </button>
+        </form>
+      </details>
     </div>
   );
 }

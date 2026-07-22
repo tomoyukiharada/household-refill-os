@@ -18,11 +18,103 @@ model User {
 }
 
 model Household {
-  id        String            @id @default(cuid())
-  name      String
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
-  members   HouseholdMember[]
+  id            String             @id @default(cuid())
+  name          String
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  members       HouseholdMember[]
+  products      Product[]
+  inventoryItems InventoryItem[]
+  stores        Store[]
+  shoppingLists ShoppingList[]
+  shoppingItems ShoppingListItem[]
+}
+
+model Store {
+  id            String             @id @default(cuid())
+  householdId   String
+  name          String
+  sortOrder     Int                @default(0)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  household     Household          @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  products      Product[]
+  shoppingItems ShoppingListItem[]
+
+  @@unique([householdId, name])
+  @@index([householdId, sortOrder])
+}
+
+model Product {
+  id              String             @id @default(cuid())
+  householdId     String
+  name            String
+  category        String
+  defaultQuantity Float              @default(1)
+  defaultUnit     String
+  defaultStoreId  String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  household       Household          @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  defaultStore    Store?              @relation(fields: [defaultStoreId], references: [id], onDelete: SetNull)
+  inventoryItems  InventoryItem[]
+  shoppingItems   ShoppingListItem[]
+
+  @@unique([householdId, name])
+  @@index([householdId, category])
+}
+
+model InventoryItem {
+  id              String         @id @default(cuid())
+  householdId     String
+  productId       String
+  level           InventoryLevel @default(unknown)
+  remainingNote   String         @default("")
+  estimatedRunout String         @default("")
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  household       Household      @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  product         Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([householdId, productId])
+  @@index([householdId, level])
+}
+
+model ShoppingList {
+  id          String             @id @default(cuid())
+  householdId String
+  name        String
+  status      ShoppingListStatus @default(active)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  household   Household          @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  items       ShoppingListItem[]
+
+  @@index([householdId, status])
+}
+
+model ShoppingListItem {
+  id             String             @id @default(cuid())
+  householdId    String
+  shoppingListId String
+  productId      String?
+  storeId        String?
+  title          String
+  quantity       Float              @default(1)
+  unit           String
+  priority       ShoppingPriority   @default(normal)
+  status         ShoppingItemStatus @default(active)
+  note           String             @default("")
+  position       Int                @default(0)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  household      Household          @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  shoppingList   ShoppingList       @relation(fields: [shoppingListId], references: [id], onDelete: Cascade)
+  product        Product?           @relation(fields: [productId], references: [id], onDelete: SetNull)
+  store          Store?             @relation(fields: [storeId], references: [id], onDelete: SetNull)
+
+  @@index([householdId, shoppingListId, status])
+  @@index([householdId, productId])
 }
 
 model HouseholdMember {
@@ -42,4 +134,28 @@ model HouseholdMember {
 enum Role {
   owner
   member
+}
+
+enum InventoryLevel {
+  enough
+  low
+  empty
+  unknown
+}
+
+enum ShoppingListStatus {
+  active
+  archived
+}
+
+enum ShoppingPriority {
+  low
+  normal
+  high
+}
+
+enum ShoppingItemStatus {
+  active
+  checked
+  skipped
 }

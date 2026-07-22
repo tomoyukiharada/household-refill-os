@@ -1,4 +1,5 @@
 import { Check, Circle, RotateCcw } from "lucide-react";
+import { toggleShoppingItem } from "@/app/(app)/actions";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { cn } from "@/lib/utils";
 import type { ShoppingItem } from "@/lib/types";
@@ -19,13 +20,11 @@ const priorityTones: Record<ShoppingItem["priority"], "neutral" | "amber" | "red
 type ShoppingItemRowProps = {
   item: ShoppingItem;
   compact?: boolean;
-  onToggle: () => void;
 };
 
 export function ShoppingItemRow({
   item,
-  compact = false,
-  onToggle
+  compact = false
 }: ShoppingItemRowProps) {
   const checked = item.status === "checked";
 
@@ -37,29 +36,31 @@ export function ShoppingItemRow({
         checked && "bg-slate-50"
       )}
     >
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-label={
-          checked ? `${item.title}を未購入に戻す` : `${item.title}を購入済みにする`
-        }
-        className={cn(
-          "grid h-11 w-11 shrink-0 place-items-center rounded-lg border transition",
-          checked
-            ? "border-emerald-200 bg-emerald-50 text-leaf"
-            : "border-slate-300 bg-white text-slate-500 hover:border-leaf hover:text-leaf"
-        )}
-      >
-        {checked ? (
-          compact ? (
-            <RotateCcw aria-hidden="true" className="h-5 w-5" />
+      <form action={toggleShoppingItem}>
+        <input type="hidden" name="itemId" value={item.id} />
+        <button
+          type="submit"
+          aria-label={
+            checked ? `${item.title}を未購入に戻す` : `${item.title}を購入済みにする`
+          }
+          className={cn(
+            "grid h-11 w-11 shrink-0 place-items-center rounded-lg border transition",
+            checked
+              ? "border-emerald-200 bg-emerald-50 text-leaf"
+              : "border-slate-300 bg-white text-slate-500 hover:border-leaf hover:text-leaf"
+          )}
+        >
+          {checked ? (
+            compact ? (
+              <RotateCcw aria-hidden="true" className="h-5 w-5" />
+            ) : (
+              <Check aria-hidden="true" className="h-5 w-5" />
+            )
           ) : (
-            <Check aria-hidden="true" className="h-5 w-5" />
-          )
-        ) : (
-          <Circle aria-hidden="true" className="h-5 w-5" />
-        )}
-      </button>
+            <Circle aria-hidden="true" className="h-5 w-5" />
+          )}
+        </button>
+      </form>
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">

@@ -25,6 +25,7 @@ export type UsualProduct = {
 
 export type InventoryItem = {
   id: string;
+  productId: string;
   name: string;
   category: string;
   store: string;

@@ -6,7 +6,7 @@
 
 ## 現在の実装範囲
 
-Phase 1まで実装済みです。
+Phase 2まで実装済みです。
 
 - Next.js App Router + TypeScript + Tailwind CSS
 - スマホファーストの買い物UI
@@ -19,8 +19,11 @@ Phase 1まで実装済みです。
 - ログアウト
 - Docker Compose起動
 - Playwright E2E用Dockerサービス
-
-まだPhase 2の永続化CRUDは未実装です。買い物リスト、定番品、残量画面の表示データは引き続きモックです。
+- Product / InventoryItem / Store / ShoppingList / ShoppingListItem
+- 定番品と買い物項目の追加
+- 買い物チェック状態と残量レベルの永続化
+- householdIdによる家庭データの分離
+- 自宅サーバー向け本番Docker Compose
 
 ## 必要なもの
 
@@ -29,7 +32,7 @@ Dockerで開発・起動する前提です。ローカルにNode.jsやpnpmをイ
 - Docker Desktop または Docker Engine
 - Git
 
-pnpmはDockerイメージ内のCorepack経由で使います。`node_modules` と `.next` はDocker named volumeに置くため、ホスト側に依存ファイルは作りません。
+pnpmはDockerイメージ内へ固定バージョンを事前インストールします。`node_modules` と `.next` はDocker named volumeに置くため、ホスト側に依存ファイルは作りません。
 
 ## 初回セットアップ
 
@@ -107,16 +110,12 @@ Docker Composeで使う値は `.env` に置きます。Next.jsをホストのNod
 
 ## ドキュメント
 
-- [Architecture](docs/architecture.md)
-- [User Guide](docs/user-guide.md)
-- [Development Guide](docs/development.md)
+- [Development Roadmap](docs/roadmap.md): Phaseごとの到達点と今後の方向性
+- [User Guide](docs/user-guide.md): 家庭内での基本操作
+- [Development Guide](docs/development.md): 開発環境、DB操作、テスト
+- [Architecture](docs/architecture.md): 構成、データ境界、設計判断
+- [Self-hosting Guide](docs/self-hosting.md): 自宅サーバーへのデプロイ、更新、バックアップ
 
 ## 次のフェーズ
 
-次に進むならPhase 2です。
-
-- Product / InventoryItem / Store / ShoppingList / ShoppingListItem
-- 買い物リスト追加
-- チェック状態保存
-- 残量更新
-- householdIdによるデータ分離
+Phase 3では、通知、補充提案、買い物履歴、商品・店舗の管理機能を予定しています。詳しくは[Development Roadmap](docs/roadmap.md)を参照してください。

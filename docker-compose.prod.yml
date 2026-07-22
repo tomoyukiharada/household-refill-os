@@ -1,0 +1,30 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    environment:
+      DATABASE_URL: "file:../data/app.db"
+      AUTH_SECRET: "${AUTH_SECRET:?AUTH_SECRET is required}"
+      APP_BASE_URL: "${APP_BASE_URL:?APP_BASE_URL is required}"
+      NEXTAUTH_URL: "${NEXTAUTH_URL:?NEXTAUTH_URL is required}"
+      INITIAL_OWNER_EMAIL: "${INITIAL_OWNER_EMAIL:?INITIAL_OWNER_EMAIL is required}"
+      INITIAL_OWNER_PASSWORD: "${INITIAL_OWNER_PASSWORD:?INITIAL_OWNER_PASSWORD is required}"
+      INITIAL_HOUSEHOLD_NAME: "${INITIAL_HOUSEHOLD_NAME:-Home}"
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    restart: unless-stopped
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/login').then((response) => { if (!response.ok) process.exit(1) }).catch(() => process.exit(1))"
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s

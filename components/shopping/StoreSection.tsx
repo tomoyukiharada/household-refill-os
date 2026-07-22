@@ -6,14 +6,12 @@ type StoreSectionProps = {
   store: string;
   items: ShoppingItem[];
   compact?: boolean;
-  onToggleItem: (id: string) => void;
 };
 
 export function StoreSection({
   store,
   items,
-  compact = false,
-  onToggleItem
+  compact = false
 }: StoreSectionProps) {
   if (compact) {
     return (
@@ -23,7 +21,6 @@ export function StoreSection({
             key={item.id}
             item={item}
             compact
-            onToggle={() => onToggleItem(item.id)}
           />
         ))}
       </div>
@@ -47,7 +44,6 @@ export function StoreSection({
           <ShoppingItemRow
             key={item.id}
             item={item}
-            onToggle={() => onToggleItem(item.id)}
           />
         ))}
       </div>
